@@ -1,7 +1,5 @@
 #include "wifi_handler.h"
 
-WiFiServer server(80);
-
 extern Internet_Conn wifi_handler_init(void)
 {
     Internet_Conn status = NO_CONNECTION;
@@ -69,26 +67,4 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
     }
 
     return status;
-}
-
-extern Server_Status wifi_handler_get_server_status(void)
-{
-    Server_Status connection = SERVER_OFFLINE;
-    WiFiClient client = server.available();
-    if (client)
-    {
-        connection = SERVER_AVAILABLE;
-    }
-    else
-    {
-        connection = SERVER_OFFLINE;
-    }
-    
-    return connection;
-}
-
-extern Client_Status wifi_handler_get_client_status(void)
-{
-    Client_Status status = NO_CLIENT_CONNECTED;
-
 }
