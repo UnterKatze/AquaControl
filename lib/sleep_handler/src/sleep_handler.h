@@ -4,12 +4,19 @@
 #include <Arduino.h>
 #include "../../debug_module/src/debug_module.h"
 #include "../../time_server/src/time_server.h"
-// include nvm_handler
+#include "../../nvm_handler/src/nvm_handler.h"
+
+/**
+ * - Night mode for switching to night picture(s)
+ */
+typedef enum Sleep_Mode_ {
+    SLEEP_MODE_ON,
+    SLEEP_MODE_OFF
+} Sleep_Mode;
 
 /**
  * - interface functions of the sleep handler
  */
-extern uint32_t sleep_handler_get_time_until_sleep(void);
-extern void sleep_handler_activate_sleep_mode(uint32_t sleep_time);
+extern void sleep_handler_go_sleep_if_ready(void);
 
 #endif /* SLEEP_HANDLER_H */
