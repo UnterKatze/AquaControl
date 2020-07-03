@@ -9,8 +9,8 @@ Requirements:
 #6	The current consumption of the Controller should be as low as possible
 
 Software Architecture:
-Software Component 1:	TIME_SERVER
+Software Component 1:	TIME_SERVER			DONE
 Software Component 2:	WIFI_HANDLER
-Software Component 3:	SLEEP_HANDLER
+Software Component 3:	SLEEP_HANDLER			DONE
 Software Component 4:	DEBUG_MODULE
-Software Component 5: 	NVM_HANDLER
+Software Component 5: 	NVM_HANDLER			DONE
