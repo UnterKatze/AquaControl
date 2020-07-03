@@ -21,6 +21,7 @@
  * 5 -> blue evening off ticks
  */
 static byte led_times_ticks[NUMBER_OF_MEM_BLOCKS];
+static byte led_times_ticks_old[NUMBER_OF_MEM_BLOCKS];
 
 /*
  * - Information about write status

@@ -10,6 +10,7 @@ extern byte *nvm_handler_read_stored_data(void)
     for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
     {
         led_times_ticks[i] = EEPROM.read(i);
+        led_times_ticks_old[i] = led_times_ticks[i];
     }
 
     return led_times_ticks;

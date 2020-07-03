@@ -68,3 +68,19 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
 
     return status;
 }
+
+extern Client_Conn wifi_handler_get_client_connected(void)
+{
+    Client_Conn status = NO_CLIENT_CONNECTED;
+    static WiFiClient client = server.available();
+    if (client)
+    {
+        status = CLIENT_CONNECTED;
+    }
+    else
+    {
+        status = NO_CLIENT_CONNECTED;
+    }
+    
+    return status;
+}

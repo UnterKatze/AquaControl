@@ -35,7 +35,7 @@ uint32_t calc_sleep_time_sec(uint8_t time_now_ticks)
 extern void sleep_handler_go_sleep_if_ready(void)
 {
     uint8_t hour_now, minute_now;
-    uint8_t time_now_ticks, ticks_to_sleep;
+    uint8_t time_now_ticks;
     uint32_t sleep_time_sec;
     Sleep_Mode status = SLEEP_MODE_OFF;
     hour_now = time_server_get_hour();
