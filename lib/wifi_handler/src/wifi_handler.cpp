@@ -69,11 +69,27 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
     return status;
 }
 
-extern Client_Conn wifi_handler_get_client_connected(void)
+extern Server_Available wifi_handler_get_server_available(void)
 {
-    Client_Conn status = NO_CLIENT_CONNECTED;
-    static WiFiClient client = server.available();
+    Server_Available status = SERVER_NOT_AVAILABLE;
+    client = server.available();
     if (client)
+    {
+        status = SERVER_AVAILABLE;
+    }
+    else
+    {
+        status = SERVER_NOT_AVAILABLE;
+    }
+    
+    return status;
+}
+
+extern Client_Connected wifi_handler_get_client_connected(void)
+{
+    Client_Connected status = NO_CLIENT_CONNECTED;
+
+    if (1 == client.connected())
     {
         status = CLIENT_CONNECTED;
     }
@@ -83,4 +99,35 @@ extern Client_Conn wifi_handler_get_client_connected(void)
     }
     
     return status;
+}
+
+extern Client_Available wifi_handler_get_client_available(void)
+{
+    Client_Available status = NO_CLIENT_AVAILABLE;
+    if (1 == client.available())
+    {
+        status = CLIENT_AVAILABLE;
+    }
+    else
+    {
+        status = NO_CLIENT_AVAILABLE;
+    }
+    
+    return status;
+}
+
+extern char wifi_handler_read_byte_from_client(void)
+{
+    char c = client.read();
+    return c;
+}
+
+extern void wifi_handler_print_to_client(String data)
+{
+    client.println(data);
+}
+
+extern void wifi_handler_print_to_client(void)
+{
+    client.println();
 }

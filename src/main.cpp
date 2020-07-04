@@ -19,43 +19,83 @@ void dio_init(void)
 
 void handle_http_server(void)
 {
-  // TBD
+  uint32_t current_time = millis();
+  uint32_t previous_time = current_time;
+  String currentLine = "";
+
+  while ((CLIENT_CONNECTED == wifi_handler_get_client_connected()) && ((current_time - previous_time) <= server_timeout_time))
+  {
+    
+    current_time = millis();
+    if (CLIENT_AVAILABLE == wifi_handler_get_client_available())
+    {
+      char c = wifi_handler_read_byte_from_client();
+      header = header + c;
+      if (c == '\n')
+      {
+        if (0 == currentLine.length())
+        {
+          wifi_handler_print_to_client("HTTP/1.1 200 OK");
+          wifi_handler_print_to_client("Content-type:text/html");
+          wifi_handler_print_to_client("Connection: close");
+          wifi_handler_print_to_client();
+
+          // check what is submitted
+        }
+      }
+    }
+  }
+
+  // write user data to led_times_ticks[]
+}
+
+void write_new_led_times_to_nvm(void)
+{
+  if ((led_times_ticks[0] == led_times_ticks_old[0]) && (led_times_ticks[1] == led_times_ticks_old[1]) && (led_times_ticks[2] == led_times_ticks_old[2]) &&
+      (led_times_ticks[3] == led_times_ticks_old[3]) && (led_times_ticks[4] == led_times_ticks_old[4]) && (led_times_ticks[5] == led_times_ticks_old[5]))
+  {
+    // do nothing when not changed
+  }
+  else
+  {
+    Write_Status status = WRITING_FAILED;
+    status = nvm_handler_write_data(led_times_ticks);
+
+    if (DEBUG_ACTIVE == debug_state)
+    {
+      if (WRITING_SUCCESS == status)
+      {
+        debug_print("Writing to Nvm successfull");
+      }
+      else
+      {
+        debug_print("Writing to Nvm failed!");
+      }
+    }
+
+    if (WRITING_SUCCESS == status)
+    {
+      for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
+      {
+        led_times_ticks_old[i] = led_times_ticks[i];
+      }
+    }
+  }
 }
 
 void update_led_times_from_user_input(void)
 {
-  Client_Conn status = NO_CLIENT_CONNECTED;
-  status = wifi_handler_get_client_connected();
+  Server_Available status = SERVER_NOT_AVAILABLE;
+  status = wifi_handler_get_server_available();
 
-  if (CLIENT_CONNECTED == status)
+  if (SERVER_AVAILABLE == status)
   {
     handle_http_server();
   }
 
-  if ((led_times_ticks[0] == led_times_ticks_old[0]) && (led_times_ticks[1] == led_times_ticks_old[1]) && (led_times_ticks[2] == led_times_ticks_old[2]) && 
-      (led_times_ticks[3] == led_times_ticks_old[3]) && (led_times_ticks[4] == led_times_ticks_old[4]) && (led_times_ticks[5] == led_times_ticks_old[5]))
-      {
-        // do nothing
-      }
-      else
-      {
-        Write_Status status = WRITING_FAILED;
-        status = nvm_handler_write_data(led_times_ticks);
+  write_new_led_times_to_nvm();
 
-        if (DEBUG_ACTIVE == debug_state)
-        {
-          if (WRITING_SUCCESS == status)
-          {
-            debug_print("Writing to Nvm successfull");
-          }
-          else
-          {
-            debug_print("Writing to Nvm failed!");
-          }
-        }
-      }
-
-      // TBD??
+  // TBD??
 }
 
 uint8_t convert_now_time_to_ticks(uint8_t hour_now, uint8_t minute_now)
@@ -121,19 +161,6 @@ void loop()
   update_led_times_from_user_input();
 
   control_leds();
+
   delay(1000);
-  
-  /*
-  byte *led_times_nvm;
-
-  led_times_nvm = nvm_handler_read_stored_data();
-
-  for (int i = 0; i < 12; i++)
-  {
-    Serial.print("Uhzeiten: ");
-    Serial.print(*(led_times_nvm + i));
-    Serial.print("\n");
-    delay(1000);
-  }
-  */
 }
