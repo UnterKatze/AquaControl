@@ -5,7 +5,7 @@
 #include "../lib/sleep_handler/src/sleep_handler.h"
 
 #define DEBUG_MODE
-#define WHITE_LED_PIN D1
+#define WHITE_LED_PIN D4
 #define BLUE_LED_PIN D2
 
 void dio_init(void)
@@ -104,20 +104,130 @@ bool check_if_new_times_are_available(void)
     status = true;
   }
 
+  if (DEBUG_ACTIVE == debug_state)
+  {
+    debug_print("New Times available?");
+    debug_print(String(status));
+  }
+
   return status;
+}
+
+bool check_if_viable(int8_t hour_on, int8_t minute_on, int8_t hour_off, int8_t minute_off)
+{
+  bool viable = false;
+
+  if ((hour_on >= 0) && (hour_on <= 23) && (hour_off >= 0) && (hour_off <= 23) && (minute_on >= 0) && (minute_on <= 59) && (minute_off >= 0) && (minute_off <= 59))
+  {
+    viable = true;
+  }
+  else
+  {
+    viable = false;
+  }
+
+  return viable;
+}
+
+void save_new_time_to_ram(int8_t hour_on, int8_t minute_on, int8_t hour_off, int8_t minute_off, uint8_t which_time)
+{
+  uint8_t ticks_on;
+  uint8_t ticks_off;
+  double minutes_on_double;
+  double minutes_off_double;
+
+  hour_on = hour_on * 4;                // on ticks from hours
+  minutes_on_double = minute_on / 15.0; // on ticks from minutes (deciamal)
+  minute_on = round(minutes_on_double); // on ticks from minutes (rounded)
+  ticks_on = hour_on + minute_on;       // on ticks from hours + minutes
+
+  hour_off = hour_off * 4;                // off ticks from hours
+  minutes_off_double = minute_off / 15.0; // off ticks from minutes (deciamal)
+  minute_off = round(minutes_off_double); // off ticks from minutes (rounded)
+  ticks_off = hour_off + minute_off;      // off ticks from hours + minutes
+
+  switch (which_time)
+  {
+  case 0:
+  {
+    led_times_ticks[0] = ticks_on;
+    led_times_ticks[1] = ticks_off;
+  }
+  case 1:
+  {
+    led_times_ticks[2] = ticks_on;
+    led_times_ticks[3] = ticks_off;
+  }
+  case 2:
+  {
+    led_times_ticks[4] = ticks_on;
+    led_times_ticks[5] = ticks_off;
+  }
+  default:
+  {
+    // do nothing
+  }
+  }
 }
 
 void calc_ticks_from_string(void)
 {
-  // convert strings to uhrzeiten
-  // convert uhrzeiten to ticks
-  // save ticks in var: led_times_ticks
+  uint8_t which_time;
+  int8_t hour_on, minute_on, hour_off, minute_off;
+  if (blue_led_morning_string_new != blue_led_morning_string_saved)
+  {
+    which_time = 0;
+    hour_on = blue_led_morning_string_new.substring(0, 2).toInt();
+    minute_on = blue_led_morning_string_new.substring(3, 5).toInt();
+
+    hour_off = blue_led_morning_string_new.substring(6, 8).toInt();
+    minute_off = blue_led_morning_string_new.substring(9).toInt();
+
+    if (true == check_if_viable(hour_on, minute_on, hour_off, minute_off))
+    {
+      save_new_time_to_ram(hour_on, minute_on, hour_off, minute_off, which_time);
+    }
+  }
+
+  if (white_led_string_new != white_led_string_saved)
+  {
+    which_time = 1;
+    hour_on = white_led_string_new.substring(0, 2).toInt();
+    minute_on = white_led_string_new.substring(3, 5).toInt();
+
+    hour_off = white_led_string_new.substring(6, 8).toInt();
+    minute_off = white_led_string_new.substring(9).toInt();
+
+    if (true == check_if_viable(hour_on, minute_on, hour_off, minute_off))
+    {
+      save_new_time_to_ram(hour_on, minute_on, hour_off, minute_off, which_time);
+    }
+  }
+
+  if (blue_led_evening_string_new != blue_led_evening_string_saved)
+  {
+    which_time = 0;
+    hour_on = blue_led_evening_string_new.substring(0, 2).toInt();
+    minute_on = blue_led_evening_string_new.substring(3, 5).toInt();
+
+    hour_off = blue_led_evening_string_new.substring(6, 8).toInt();
+    minute_off = blue_led_evening_string_new.substring(9).toInt();
+
+    if (true == check_if_viable(hour_on, minute_on, hour_off, minute_off))
+    {
+      save_new_time_to_ram(hour_on, minute_on, hour_off, minute_off, which_time);
+    }
+  }
 }
 
 void update_led_times_from_user_input(void)
 {
   if (true == check_if_new_times_are_available())
   {
+    if (DEBUG_ACTIVE == debug_state)
+    {
+      debug_print("New Data available!");
+    }
     calc_ticks_from_string();
     write_new_led_times_to_nvm();
   }
@@ -144,6 +254,15 @@ void loop()
   time_server_update_time();
 
   update_led_times_from_user_input();
+
+  if (DEBUG_ACTIVE == debug_state)
+  {
+    debug_print("Actual ticks in ram:");
+    for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
+    {
+      debug_print(String(led_times_ticks[i]));
+    }
+  }
 
   control_leds();
 
