@@ -17,44 +17,12 @@ void dio_init(void)
   digitalWrite(BLUE_LED_PIN, LOW);
 }
 
-void handle_http_server(void)
-{
-  uint32_t current_time = millis();
-  uint32_t previous_time = current_time;
-  String currentLine = "";
-
-  while ((CLIENT_CONNECTED == wifi_handler_get_client_connected()) && ((current_time - previous_time) <= server_timeout_time))
-  {
-    
-    current_time = millis();
-    if (CLIENT_AVAILABLE == wifi_handler_get_client_available())
-    {
-      char c = wifi_handler_read_byte_from_client();
-      header = header + c;
-      if (c == '\n')
-      {
-        if (0 == currentLine.length())
-        {
-          wifi_handler_print_to_client("HTTP/1.1 200 OK");
-          wifi_handler_print_to_client("Content-type:text/html");
-          wifi_handler_print_to_client("Connection: close");
-          wifi_handler_print_to_client();
-
-          // check what is submitted
-        }
-      }
-    }
-  }
-
-  // write user data to led_times_ticks[]
-}
-
 void write_new_led_times_to_nvm(void)
 {
   if ((led_times_ticks[0] == led_times_ticks_old[0]) && (led_times_ticks[1] == led_times_ticks_old[1]) && (led_times_ticks[2] == led_times_ticks_old[2]) &&
       (led_times_ticks[3] == led_times_ticks_old[3]) && (led_times_ticks[4] == led_times_ticks_old[4]) && (led_times_ticks[5] == led_times_ticks_old[5]))
   {
-    // do nothing when not changed
+    // do nothing when times are same
   }
   else
   {
@@ -81,21 +49,6 @@ void write_new_led_times_to_nvm(void)
       }
     }
   }
-}
-
-void update_led_times_from_user_input(void)
-{
-  Server_Available status = SERVER_NOT_AVAILABLE;
-  status = wifi_handler_get_server_available();
-
-  if (SERVER_AVAILABLE == status)
-  {
-    handle_http_server();
-  }
-
-  write_new_led_times_to_nvm();
-
-  // TBD??
 }
 
 uint8_t convert_now_time_to_ticks(uint8_t hour_now, uint8_t minute_now)
@@ -139,6 +92,37 @@ void control_leds(void)
   set_leds(time_now_ticks);
 }
 
+bool check_if_new_times_are_available(void)
+{
+  bool status = false;
+  if ((blue_led_morning_string_new == blue_led_morning_string_saved) && (white_led_string_new == white_led_string_saved) && (blue_led_evening_string_new == blue_led_evening_string_saved))
+  {
+    status = false;
+  }
+  else
+  {
+    status = true;
+  }
+
+  return status;
+}
+
+void calc_ticks_from_string(void)
+{
+  // convert strings to uhrzeiten
+  // convert uhrzeiten to ticks
+  // save ticks in var: led_times_ticks
+}
+
+void update_led_times_from_user_input(void)
+{
+  if (true == check_if_new_times_are_available())
+  {
+    calc_ticks_from_string();
+    write_new_led_times_to_nvm();
+  }
+}
+
 void setup()
 {
 #ifdef DEBUG_MODE
@@ -151,6 +135,7 @@ void setup()
   nvm_handler_read_stored_data();
 
   wifi_handler_init();
+  wifi_handler_startup_server();
   time_server_init();
 }
 

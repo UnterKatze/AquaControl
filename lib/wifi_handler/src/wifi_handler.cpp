@@ -50,7 +50,7 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
 
     if (WL_CONNECTED == WiFi.status())
     {
-        
+
         status = ACTIVE_CONNECTION;
         if (DEBUG_ACTIVE == debug_state)
         {
@@ -63,71 +63,50 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
         if (DEBUG_ACTIVE == debug_state)
         {
             debug_print("No connection");
-        } 
+        }
     }
 
     return status;
 }
 
-extern Server_Available wifi_handler_get_server_available(void)
+extern void wifi_handler_startup_server(void)
 {
-    Server_Available status = SERVER_NOT_AVAILABLE;
-    client = server.available();
-    if (client)
-    {
-        status = SERVER_AVAILABLE;
-    }
-    else
-    {
-        status = SERVER_NOT_AVAILABLE;
-    }
-    
-    return status;
-}
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) { request->send_P(200, "text/html", index_html); });
 
-extern Client_Connected wifi_handler_get_client_connected(void)
-{
-    Client_Connected status = NO_CLIENT_CONNECTED;
+    // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
+    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String inputParam = "";
+        String inputMessage = "";
+        // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
+        if (request->hasParam(PARAM_INPUT_1))
+        {
+            inputMessage = request->getParam(PARAM_INPUT_1)->value();
+            inputParam = PARAM_INPUT_1;
+            blue_led_morning_string_new = inputMessage;
+        }
+        // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
+        else if (request->hasParam(PARAM_INPUT_2))
+        {
+            inputMessage = request->getParam(PARAM_INPUT_2)->value();
+            inputParam = PARAM_INPUT_2;
+            white_led_string_new = inputMessage;
+        }
+        // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
+        else if (request->hasParam(PARAM_INPUT_3))
+        {
+            inputMessage = request->getParam(PARAM_INPUT_3)->value();
+            inputParam = PARAM_INPUT_3;
+            blue_led_evening_string_new = inputMessage;
+        }
+        else
+        {
+            // inputMessage = "No message sent";
+            // inputParam = "none";
+        }
+        
+        request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + inputParam + ") with value: " + "<br><a href=\"/\">Return to Home Page</a>");
+    });
 
-    if (1 == client.connected())
-    {
-        status = CLIENT_CONNECTED;
-    }
-    else
-    {
-        status = NO_CLIENT_CONNECTED;
-    }
-    
-    return status;
-}
-
-extern Client_Available wifi_handler_get_client_available(void)
-{
-    Client_Available status = NO_CLIENT_AVAILABLE;
-    if (1 == client.available())
-    {
-        status = CLIENT_AVAILABLE;
-    }
-    else
-    {
-        status = NO_CLIENT_AVAILABLE;
-    }
-    
-    return status;
-}
-
-extern char wifi_handler_read_byte_from_client(void)
-{
-    char c = client.read();
-    return c;
-}
-
-extern void wifi_handler_print_to_client(String data)
-{
-    client.println(data);
-}
-
-extern void wifi_handler_print_to_client(void)
-{
-    client.println();
+    // server.onNotFound(notFound);
+    server.begin();
 }
