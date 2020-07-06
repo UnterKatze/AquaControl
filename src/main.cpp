@@ -154,6 +154,18 @@ void read_nvm(void)
 
 void copy_new_times(void)
 {
+  // werden iwie nicht kopiert!
+  if (DEBUG_ACTIVE == debug_state)
+    {
+      debug_print("Copied Data:");
+      debug_print(String(byte0));
+      debug_print(String(byte1));
+      debug_print(String(byte2));
+      debug_print(String(byte3));
+      debug_print(String(byte4));
+      debug_print(String(byte5));
+    }
+
   led_times_ticks[0] = byte0;
   led_times_ticks[1] = byte1;
   led_times_ticks[2] = byte2;
@@ -188,5 +200,5 @@ void loop()
 
   control_leds();
 
-  delay(1000);
+  delay(3000);
 }

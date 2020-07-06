@@ -211,9 +211,11 @@ extern void wifi_handler_startup_server(void)
 
     // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
     server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String inputParam = "";
+
+        String inputMessage;
+        String inputParam;
+
         // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-        String inputMessage = "";
         if (request->hasParam(PARAM_INPUT_1))
         {
             inputMessage = request->getParam(PARAM_INPUT_1)->value();
@@ -236,11 +238,11 @@ extern void wifi_handler_startup_server(void)
         }
         else
         {
-            // inputMessage = "No message sent";
-            // inputParam = "none";
+            inputMessage = "";
+            inputParam = "";
         }
 
-        request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + inputParam + ") with value: " + "<br><a href=\"/\">Return to Home Page</a>");
+        request->send(200, "text/html", "HTTP GET request sent to your ESP on input field (" + inputParam + ") with value: " + inputMessage + "<br><a href=\"/\">Return to Home Page</a>");
     });
 
     server.onNotFound(notFound);
