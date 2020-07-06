@@ -17,6 +17,13 @@ const char PARAM_INPUT_1[] = "input1";
 const char PARAM_INPUT_2[] = "input2";
 const char PARAM_INPUT_3[] = "input3";
 
+static byte byte0;
+static byte byte1;
+static byte byte2;
+static byte byte3;
+static byte byte4;
+static byte byte5;
+
 static const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>
   <title>ESP Input Form</title>

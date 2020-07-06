@@ -6,9 +6,11 @@ extern Internet_Conn wifi_handler_init(void)
     uint8_t timeout = 0;
     uint16_t timer_10ms = 0;
 
+    WiFi.mode(WIFI_STA);
+
     WiFi.begin(ssid, password);
 
-    while ((WL_CONNECTED != WiFi.status()) && (0 == timeout))
+    while ((WL_CONNECTED != WiFi.waitForConnectResult()) && (0 == timeout))
     {
         delay(10);
         timer_10ms++;
@@ -24,8 +26,9 @@ extern Internet_Conn wifi_handler_init(void)
         if (DEBUG_ACTIVE == debug_state)
         {
             debug_print("Wifi connected");
+            debug_print("Server started at IP:");
+            Serial.println(WiFi.localIP());
         }
-        server.begin();
     }
     else
     {
@@ -71,8 +74,8 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
 
 void save_new_data_when_viable(String inputMessage, String inputParam)
 {
-    bool viable1 = false;
-    bool viable2 = false;
+    bool viable_not_empty = false;
+    bool viable = false;
     int8_t hour_on, minute_on, hour_off, minute_off;
     String hour_on_, minute_on_, hour_off_, minute_off_;
 
@@ -83,30 +86,29 @@ void save_new_data_when_viable(String inputMessage, String inputParam)
 
     if (hour_on_.isEmpty() || minute_on_.isEmpty() || hour_off_.isEmpty() || minute_off_.isEmpty())
     {
-        viable1 = false;
+        viable_not_empty = false;
     }
     else
     {
-        viable1 = true;
+        viable_not_empty = true;
     }
 
     hour_on = hour_on_.toInt();
     minute_on = minute_on_.toInt();
     hour_off = hour_off_.toInt();
     minute_off = minute_off_.toInt();
-    
+
     if ((hour_on >= 0) && (hour_on <= 23) && (hour_off >= 0) && (hour_off <= 23) && (minute_on >= 0) && (minute_on <= 59) && (minute_off >= 0) && (minute_off <= 59))
     {
-        viable2 = true;
+        viable = true;
     }
     else
     {
-        viable2 = false;
+        viable = false;
     }
 
-    if ((true == viable1) && (true == viable2))
+    if ((true == viable_not_empty) && (true == viable))
     {
-
         uint8_t string_number = 0;
         if (inputParam == PARAM_INPUT_1)
         {
@@ -126,11 +128,10 @@ void save_new_data_when_viable(String inputMessage, String inputParam)
                 }
                 else
                 {
-                    
                 }
             }
         }
-        
+
         uint8_t ticks_on;
         uint8_t ticks_off;
         double minutes_on_double;
@@ -150,47 +151,38 @@ void save_new_data_when_viable(String inputMessage, String inputParam)
         {
         case 1:
         {
-            if ((ticks_on != led_times_ticks[0]) && (ticks_off != led_times_ticks[1]))
-            {
-                led_times_ticks[0] = ticks_on;
-                led_times_ticks[1] = ticks_off;
+            byte0 = ticks_on;
+            byte1 = ticks_off;
 
-                if (DEBUG_ACTIVE == debug_state)
-                {
-                    debug_print("New Data (1) saved to ram:");
-                    debug_print(String(led_times_ticks[0]));
-                    debug_print(String(led_times_ticks[1]));
-                }
+            if (DEBUG_ACTIVE == debug_state)
+            {
+                debug_print("New Data (1) saved to ram:");
+                debug_print(String(byte0));
+                debug_print(String(byte1));
             }
         }
         case 2:
         {
-            if ((ticks_on != led_times_ticks[2]) && (ticks_off != led_times_ticks[3]))
-            {
-                led_times_ticks[2] = ticks_on;
-                led_times_ticks[3] = ticks_off;
+            byte2 = ticks_on;
+            byte3 = ticks_off;
 
-                if (DEBUG_ACTIVE == debug_state)
-                {
-                    debug_print("New Data (2) saved to ram:");
-                    debug_print(String(led_times_ticks[2]));
-                    debug_print(String(led_times_ticks[3]));
-                }
+            if (DEBUG_ACTIVE == debug_state)
+            {
+                debug_print("New Data (2) saved to ram:");
+                debug_print(String(byte2));
+                debug_print(String(byte3));
             }
         }
         case 3:
         {
-            if ((ticks_on != led_times_ticks[4]) && (ticks_off != led_times_ticks[5]))
-            {
-                led_times_ticks[4] = ticks_on;
-                led_times_ticks[5] = ticks_off;
+            byte4 = ticks_on;
+            byte5 = ticks_off;
 
-                if (DEBUG_ACTIVE == debug_state)
-                {
-                    debug_print("New Data (3) saved to ram:");
-                    debug_print(String(led_times_ticks[4]));
-                    debug_print(String(led_times_ticks[5]));
-                }
+            if (DEBUG_ACTIVE == debug_state)
+            {
+                debug_print("New Data (3) saved to ram:");
+                debug_print(String(byte4));
+                debug_print(String(byte5));
             }
         }
         default:
@@ -202,9 +194,9 @@ void save_new_data_when_viable(String inputMessage, String inputParam)
     else
     {
         if (DEBUG_ACTIVE == debug_state)
-            {
-                debug_print("Data not viable!");
-            }
+        {
+            debug_print("Data not viable!");
+        }
     }
 }
 

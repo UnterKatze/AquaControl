@@ -1,12 +1,15 @@
 #include <Arduino.h>
+#include "../lib/nvm_handler/src/nvm_handler.h"
 #include "../lib/wifi_handler/src/wifi_handler.h"
 #include "../lib/time_server/src/time_server.h"
-#include "../lib/nvm_handler/src/nvm_handler.h"
-#include "../lib/sleep_handler/src/sleep_handler.h"
+// #include "../lib/sleep_handler/src/sleep_handler.h"
 
 #define DEBUG_MODE
 #define WHITE_LED_PIN D4
 #define BLUE_LED_PIN D2
+
+static byte led_times_ticks[NUMBER_OF_MEM_BLOCKS];
+static byte led_times_ticks_old[NUMBER_OF_MEM_BLOCKS];
 
 void dio_init(void)
 {
@@ -21,12 +24,21 @@ void write_new_led_times_to_nvm(void)
 {
   // check what to write to nvm
   Write_Status status = WRITING_FAILED;
+  uint8_t successfull_writes = 0;
 
-  status = nvm_handler_write_data(led_times_ticks);
+  for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
+  {
+    status = nvm_handler_write_byte(led_times_ticks[i], i);
+
+    if (WRITING_SUCCESS == status)
+    {
+      successfull_writes++;
+    }
+  }
 
   if (DEBUG_ACTIVE == debug_state)
   {
-    if (WRITING_SUCCESS == status)
+    if (6 == successfull_writes)
     {
       debug_print("Writing to Nvm successfull");
     }
@@ -36,7 +48,7 @@ void write_new_led_times_to_nvm(void)
     }
   }
 
-  if (WRITING_SUCCESS == status)
+  if (6 == successfull_writes)
   {
     for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
     {
@@ -121,6 +133,35 @@ void update_led_times_from_user_input(void)
   }
 }
 
+void read_nvm(void)
+{
+  if (DEBUG_ACTIVE == debug_state)
+  {
+    debug_print("Initial Data from Nvm:");
+  }
+
+  for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
+  {
+    led_times_ticks[i] = nvm_handler_read_stored_byte(i);
+    led_times_ticks_old[i] = led_times_ticks[i];
+
+    if (DEBUG_ACTIVE == debug_state)
+    {
+      debug_print(String(led_times_ticks_old[i]));
+    }
+  }
+}
+
+void copy_new_times(void)
+{
+  led_times_ticks[0] = byte0;
+  led_times_ticks[1] = byte1;
+  led_times_ticks[2] = byte2;
+  led_times_ticks[3] = byte3;
+  led_times_ticks[4] = byte4;
+  led_times_ticks[5] = byte5;
+}
+
 void setup()
 {
 #ifdef DEBUG_MODE
@@ -130,7 +171,7 @@ void setup()
   dio_init();
 
   nvm_handler_init();
-  nvm_handler_read_stored_data();
+  read_nvm();
 
   wifi_handler_init();
   wifi_handler_startup_server();
@@ -140,6 +181,8 @@ void setup()
 void loop()
 {
   time_server_update_time();
+
+  copy_new_times();
 
   update_led_times_from_user_input();
 

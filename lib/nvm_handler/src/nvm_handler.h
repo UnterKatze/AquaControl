@@ -20,8 +20,6 @@
  * 4 -> blue evening on ticks
  * 5 -> blue evening off ticks
  */
-static byte led_times_ticks[NUMBER_OF_MEM_BLOCKS];
-static byte led_times_ticks_old[NUMBER_OF_MEM_BLOCKS];
 
 /*
  * - Information about write status
@@ -35,7 +33,7 @@ typedef enum Write_Status_ {
  * - interface functions of the nvm handler
  */
 extern void nvm_handler_init(void);
-extern void nvm_handler_read_stored_data(void);
-extern Write_Status nvm_handler_write_data(byte*);
+extern byte nvm_handler_read_stored_byte(uint8_t position);
+extern Write_Status nvm_handler_write_byte(byte data, uint8_t position);
 
 #endif /* NVM_HANDLER_H */
