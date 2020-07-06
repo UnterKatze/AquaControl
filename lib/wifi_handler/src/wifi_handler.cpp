@@ -69,6 +69,145 @@ extern Internet_Conn wifi_handler_get_wifi_status(void)
     return status;
 }
 
+void save_new_data_when_viable(String inputMessage, String inputParam)
+{
+    bool viable1 = false;
+    bool viable2 = false;
+    int8_t hour_on, minute_on, hour_off, minute_off;
+    String hour_on_, minute_on_, hour_off_, minute_off_;
+
+    hour_on_ = inputMessage.substring(0, 2);
+    minute_on_ = inputMessage.substring(3, 5);
+    hour_off_ = inputMessage.substring(6, 8);
+    minute_off_ = inputMessage.substring(9);
+
+    if (hour_on_.isEmpty() || minute_on_.isEmpty() || hour_off_.isEmpty() || minute_off_.isEmpty())
+    {
+        viable1 = false;
+    }
+    else
+    {
+        viable1 = true;
+    }
+
+    hour_on = hour_on_.toInt();
+    minute_on = minute_on_.toInt();
+    hour_off = hour_off_.toInt();
+    minute_off = minute_off_.toInt();
+    
+    if ((hour_on >= 0) && (hour_on <= 23) && (hour_off >= 0) && (hour_off <= 23) && (minute_on >= 0) && (minute_on <= 59) && (minute_off >= 0) && (minute_off <= 59))
+    {
+        viable2 = true;
+    }
+    else
+    {
+        viable2 = false;
+    }
+
+    if ((true == viable1) && (true == viable2))
+    {
+
+        uint8_t string_number = 0;
+        if (inputParam == PARAM_INPUT_1)
+        {
+            string_number = 1;
+        }
+        else
+        {
+            if (inputParam == PARAM_INPUT_2)
+            {
+                string_number = 2;
+            }
+            else
+            {
+                if (inputParam == PARAM_INPUT_3)
+                {
+                    string_number = 3;
+                }
+                else
+                {
+                    
+                }
+            }
+        }
+        
+        uint8_t ticks_on;
+        uint8_t ticks_off;
+        double minutes_on_double;
+        double minutes_off_double;
+
+        hour_on = hour_on * 4;                // on ticks from hours
+        minutes_on_double = minute_on / 15.0; // on ticks from minutes (deciamal)
+        minute_on = round(minutes_on_double); // on ticks from minutes (rounded)
+        ticks_on = hour_on + minute_on;       // on ticks from hours + minutes
+
+        hour_off = hour_off * 4;                // off ticks from hours
+        minutes_off_double = minute_off / 15.0; // off ticks from minutes (deciamal)
+        minute_off = round(minutes_off_double); // off ticks from minutes (rounded)
+        ticks_off = hour_off + minute_off;      // off ticks from hours + minutes
+
+        switch (string_number)
+        {
+        case 1:
+        {
+            if ((ticks_on != led_times_ticks[0]) && (ticks_off != led_times_ticks[1]))
+            {
+                led_times_ticks[0] = ticks_on;
+                led_times_ticks[1] = ticks_off;
+
+                if (DEBUG_ACTIVE == debug_state)
+                {
+                    debug_print("New Data (1) saved to ram:");
+                    debug_print(String(led_times_ticks[0]));
+                    debug_print(String(led_times_ticks[1]));
+                }
+            }
+        }
+        case 2:
+        {
+            if ((ticks_on != led_times_ticks[2]) && (ticks_off != led_times_ticks[3]))
+            {
+                led_times_ticks[2] = ticks_on;
+                led_times_ticks[3] = ticks_off;
+
+                if (DEBUG_ACTIVE == debug_state)
+                {
+                    debug_print("New Data (2) saved to ram:");
+                    debug_print(String(led_times_ticks[2]));
+                    debug_print(String(led_times_ticks[3]));
+                }
+            }
+        }
+        case 3:
+        {
+            if ((ticks_on != led_times_ticks[4]) && (ticks_off != led_times_ticks[5]))
+            {
+                led_times_ticks[4] = ticks_on;
+                led_times_ticks[5] = ticks_off;
+
+                if (DEBUG_ACTIVE == debug_state)
+                {
+                    debug_print("New Data (3) saved to ram:");
+                    debug_print(String(led_times_ticks[4]));
+                    debug_print(String(led_times_ticks[5]));
+                }
+            }
+        }
+        default:
+        {
+            // do nothing
+        }
+        }
+    }
+    else
+    {
+        if (DEBUG_ACTIVE == debug_state)
+            {
+                debug_print("Data not viable!");
+            }
+    }
+}
+
 void notFound(AsyncWebServerRequest *request)
 {
     request->send(404, "text/plain", "Not found");
@@ -80,46 +219,28 @@ extern void wifi_handler_startup_server(void)
 
     // Send a GET request to <ESP_IP>/get?input1=<inputMessage>
     server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
-        String inputParam;
+        String inputParam = "";
         // GET input1 value on <ESP_IP>/get?input1=<inputMessage>
-        String inputMessage;
+        String inputMessage = "";
         if (request->hasParam(PARAM_INPUT_1))
         {
             inputMessage = request->getParam(PARAM_INPUT_1)->value();
             inputParam = PARAM_INPUT_1;
-            blue_led_morning_string_new = inputMessage;
-
-            if (DEBUG_ACTIVE == debug_state)
-            {
-                debug_print("New Data got (1):");
-                debug_print(blue_led_morning_string_new);
-            }
+            save_new_data_when_viable(inputMessage, inputParam);
         }
         // GET input2 value on <ESP_IP>/get?input2=<inputMessage>
         else if (request->hasParam(PARAM_INPUT_2))
         {
             inputMessage = request->getParam(PARAM_INPUT_2)->value();
             inputParam = PARAM_INPUT_2;
-            white_led_string_new = inputMessage;
-
-            if (DEBUG_ACTIVE == debug_state)
-            {
-                debug_print("New Data got (2):");
-                debug_print(white_led_string_new);
-            }
+            save_new_data_when_viable(inputMessage, inputParam);
         }
         // GET input3 value on <ESP_IP>/get?input3=<inputMessage>
         else if (request->hasParam(PARAM_INPUT_3))
         {
             inputMessage = request->getParam(PARAM_INPUT_3)->value();
             inputParam = PARAM_INPUT_3;
-            blue_led_evening_string_new = inputMessage;
-
-            if (DEBUG_ACTIVE == debug_state)
-            {
-                debug_print("New Data got (3):");
-                debug_print(blue_led_evening_string_new);
-            }
+            save_new_data_when_viable(inputMessage, inputParam);
         }
         else
         {

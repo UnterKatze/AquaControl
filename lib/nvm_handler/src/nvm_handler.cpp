@@ -10,11 +10,11 @@ extern void nvm_handler_init(void)
     }
 }
 
-extern byte *nvm_handler_read_stored_data(void)
+extern void nvm_handler_read_stored_data(void)
 {
     if (DEBUG_ACTIVE == debug_state)
     {
-        debug_print("Nvm Data:");
+        debug_print("Nvm Data read:");
     }
 
     for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
@@ -24,11 +24,9 @@ extern byte *nvm_handler_read_stored_data(void)
 
         if (DEBUG_ACTIVE == debug_state)
         {
-            debug_print(String(led_times_ticks[i]));
+            debug_print(String(led_times_ticks_old[i]));
         }
     }
-
-    return led_times_ticks;
 }
 
 extern Write_Status nvm_handler_write_data(byte *data)
@@ -46,6 +44,11 @@ extern Write_Status nvm_handler_write_data(byte *data)
     if (EEPROM.commit())
     {
         status = WRITING_SUCCESS;
+
+        if (DEBUG_ACTIVE == debug_state)
+        {
+            debug_print("Nvm Data written");
+        }
     }
     else
     {

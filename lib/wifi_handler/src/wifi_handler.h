@@ -6,23 +6,16 @@
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include "../../debug_module/src/debug_module.h"
+#include "../../nvm_handler/src/nvm_handler.h"
 
 static const char ssid[] = "Kwik-E-Mart";
 static const char password[] = "9589089603281286";
 
 static AsyncWebServer server(80);
 
-static const char PARAM_INPUT_1[] = "input1";
-static const char PARAM_INPUT_2[] = "input2";
-static const char PARAM_INPUT_3[] = "input3";
-
-static String blue_led_morning_string_new;
-static String blue_led_evening_string_new;
-static String white_led_string_new;
-
-static String blue_led_morning_string_saved = "";
-static String blue_led_evening_string_saved = "";
-static String white_led_string_saved = "";
+const char PARAM_INPUT_1[] = "input1";
+const char PARAM_INPUT_2[] = "input2";
+const char PARAM_INPUT_3[] = "input3";
 
 static const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html><head>

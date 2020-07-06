@@ -35,7 +35,7 @@ typedef enum Write_Status_ {
  * - interface functions of the nvm handler
  */
 extern void nvm_handler_init(void);
-extern byte* nvm_handler_read_stored_data(void);
+extern void nvm_handler_read_stored_data(void);
 extern Write_Status nvm_handler_write_data(byte*);
 
 #endif /* NVM_HANDLER_H */

@@ -6,7 +6,7 @@ WiFiUDP ntpUDP;
  * - Creates a NTPClient object
  * - 3600 seconds for UTC+1
  */
-NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
+static NTPClient timeClient(ntpUDP, "europe.pool.ntp.org", 3600, 60000);
 
 static uint8_t hour = 0;
 

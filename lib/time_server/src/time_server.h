@@ -8,10 +8,10 @@
 #include "../../debug_module/src/debug_module.h"
 
 
-const uint32_t SUMMER_TIME_START_2020 = 1585443600;
-const uint32_t SUMMER_TIME_END_2020 = 1603587600;
-const uint32_t SUMMER_TIME_START_2021 = 1616893200;
-const uint32_t SUMMER_TIME_END_2021 = 1635642000;
+static uint32_t const SUMMER_TIME_START_2020 = 1585443600;
+static uint32_t const SUMMER_TIME_END_2020 = 1603587600;
+static uint32_t const SUMMER_TIME_START_2021 = 1616893200;
+static uint32_t const SUMMER_TIME_END_2021 = 1635642000;
 // more
 
 /**
