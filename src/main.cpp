@@ -3,7 +3,7 @@
 #include <ESP8266WebServer.h>
 #include "../lib/nvm_handler/src/nvm_handler.h"
 #include "../lib/time_server/src/time_server.h"
-// #include "../lib/sleep_handler/src/sleep_handler.h"
+#include "../lib/sleep_handler/src/sleep_handler.h"
 
 #define DEBUG_MODE
 #define WHITE_LED_PIN D4
@@ -18,36 +18,56 @@ typedef enum Internet_Conn_
   NO_CONNECTION
 } Internet_Conn;
 
+/**
+ * - holds the tick count (when lights should be on or off), but its not saved in nvm
+ * - ticks range from 0 to 239 -> 1 tick is 6min
+ * 
+ * - [0] is blue led on in the morning
+ * - [1] is blue led off in the morning
+ * - [2] is white led on
+ * - [3] is white led off
+ * - [4] is blue led on in the evening
+ * - [5] is blue led off in the evening
+ */
 static byte led_times_ticks[NUMBER_OF_MEM_BLOCKS];
+
+/**
+ * - holds the tick count, saved in nvm
+ */
 static byte led_times_ticks_old[NUMBER_OF_MEM_BLOCKS];
 
 static ESP8266WebServer server(80);
 
 static char htmlResponse[3000];
 
-static String h1;
-static String m1;
-static String h2;
-static String m2;
-static String h3;
-static String m3;
-static String h4;
-static String m4;
-static String h5;
-static String m5;
-static String h6;
-static String m6;
+/**
+ * - holds the strings from the server (what user typed in)
+ * 
+ * - [0] is blue led on in the morning (hours)
+ * - [1] is blue led on in the morning (minutes)
+ * - [2] is blue led off in the morning (hours)
+ * - [3] is blue led off in the morning (minutes)
+ * - [4] is white led on (hours)
+ * - [5] is white led on (minutes)
+ * - [6] is white led off (hours)
+ * - [7] is white led off (minutes)
+ * - [8] is blue led on in the evening (hours)
+ * - [9] is blue led on in the evening (minutes)
+ * - [10] is blue led off in the evening (hours)
+ * - [11] is blue led off in the evening (minutes)
+ */
+static String user_time_string[NUMBER_OF_MEM_BLOCKS * 2];
 
 static const char ssid[] = "Kwik-E-Mart";
 static const char password[] = "9589089603281286";
 
-Internet_Conn wifi_handler_init(void);
-Internet_Conn wifi_handler_get_wifi_status(void);
-void wifi_handler_handle_client(void);
+static Internet_Conn wifi_handler_init(void);
+static Internet_Conn wifi_handler_get_wifi_status(void);
+static void wifi_handler_handle_client(void);
 static void handleRoot(void);
 static void handleSave(void);
 
-extern Internet_Conn wifi_handler_init(void)
+static Internet_Conn wifi_handler_init(void)
 {
   Internet_Conn status = NO_CONNECTION;
   uint8_t timeout = 0;
@@ -91,7 +111,7 @@ extern Internet_Conn wifi_handler_init(void)
   return status;
 }
 
-extern Internet_Conn wifi_handler_get_wifi_status(void)
+static Internet_Conn wifi_handler_get_wifi_status(void)
 {
   Internet_Conn status = NO_CONNECTION;
 
@@ -198,80 +218,75 @@ static void handleSave(void)
 {
   if (DEBUG_ACTIVE == debug_state)
   {
-    debug_print("Got new Data from Server:");
+    debug_print("Got new Data from Server");
   }
 
   if (server.arg("hh1") != "")
   {
-    h1 = server.arg("hh1");
-
-    if (DEBUG_ACTIVE == debug_state)
-    {
-      debug_print(h1);
-    }
+    user_time_string[0] = server.arg("hh1");
   }
 
   if (server.arg("mm1") != "")
   {
-    m1 = server.arg("mm1");
+    user_time_string[1] = server.arg("mm1");
   }
 
   if (server.arg("hh2") != "")
   {
-    h2 = server.arg("hh2");
+    user_time_string[2] = server.arg("hh2");
   }
 
   if (server.arg("mm2") != "")
   {
-    m2 = server.arg("mm2");
+    user_time_string[3] = server.arg("mm2");
   }
 
   if (server.arg("hh3") != "")
   {
-    h3 = server.arg("hh3");
+    user_time_string[4] = server.arg("hh3");
   }
 
   if (server.arg("mm3") != "")
   {
-    m3 = server.arg("mm3");
+    user_time_string[5] = server.arg("mm3");
   }
   if (server.arg("hh4") != "")
   {
-    h4 = server.arg("hh4");
+    user_time_string[6] = server.arg("hh4");
   }
 
   if (server.arg("mm4") != "")
   {
-    m4 = server.arg("mm4");
+    user_time_string[7] = server.arg("mm4");
   }
 
   if (server.arg("hh5") != "")
   {
-    h5 = server.arg("hh5");
+    user_time_string[8] = server.arg("hh5");
   }
 
   if (server.arg("mm5") != "")
   {
-    m5 = server.arg("mm5");
+    user_time_string[9] = server.arg("mm5");
   }
 
   if (server.arg("hh6") != "")
   {
-    h6 = server.arg("hh6");
+    user_time_string[10] = server.arg("hh6");
   }
 
   if (server.arg("mm6") != "")
   {
-    m6 = server.arg("mm6");
+    user_time_string[11] = server.arg("mm6");
   }
 }
 
-extern void wifi_handler_handle_client(void)
+static void wifi_handler_handle_client(void)
 {
   server.handleClient();
 }
 
-void dio_init(void)
+static void dio_init(void)
 {
   pinMode(WHITE_LED_PIN, OUTPUT);
   pinMode(BLUE_LED_PIN, OUTPUT);
@@ -280,7 +295,7 @@ void dio_init(void)
   digitalWrite(BLUE_LED_PIN, LOW);
 }
 
-void write_new_led_times_to_nvm(void)
+static void write_new_led_times_to_nvm(void)
 {
   Write_Status status = WRITING_FAILED;
 
@@ -307,15 +322,15 @@ void write_new_led_times_to_nvm(void)
   }
 }
 
-uint8_t convert_now_time_to_ticks(uint8_t hour_now, uint8_t minute_now)
+static uint8_t convert_now_time_to_ticks(uint8_t hour_now, uint8_t minute_now)
 {
   uint16_t now_time_min = (hour_now * 60) + minute_now;
-  uint8_t now_time_ticks = now_time_min / 15;
+  uint8_t now_time_ticks = now_time_min / 6;
 
   return now_time_ticks;
 }
 
-void set_leds(uint8_t time_now_ticks)
+static void set_leds(uint8_t time_now_ticks)
 {
   if (((time_now_ticks >= led_times_ticks_old[0]) && (time_now_ticks <= led_times_ticks_old[1])) ||
       ((time_now_ticks >= led_times_ticks_old[4]) && (time_now_ticks <= led_times_ticks_old[5])))
@@ -337,7 +352,7 @@ void set_leds(uint8_t time_now_ticks)
   }
 }
 
-void control_leds(void)
+static void control_leds(void)
 {
   uint8_t hour_now, minute_now, time_now_ticks;
   hour_now = time_server_get_hour();
@@ -348,42 +363,7 @@ void control_leds(void)
   set_leds(time_now_ticks);
 }
 
-bool check_if_new_times_are_available(void)
-{
-  bool status = false;
-  if ((led_times_ticks[0] == led_times_ticks_old[0]) && (led_times_ticks[1] == led_times_ticks_old[1]) && (led_times_ticks[2] == led_times_ticks_old[2]) &&
-      (led_times_ticks[3] == led_times_ticks_old[3]) && (led_times_ticks[4] == led_times_ticks_old[4]) && (led_times_ticks[5] == led_times_ticks_old[5]))
-  {
-    status = false;
-  }
-  else
-  {
-    status = true;
-  }
-
-  if (DEBUG_ACTIVE == debug_state)
-  {
-    debug_print("New Times available?");
-    debug_print(String(status));
-    debug_print("Data in ram:");
-    for (int i = 0; i < NUMBER_OF_MEM_BLOCKS; i++)
-    {
-      debug_print(String(led_times_ticks_old[i]));
-    }
-  }
-
-  return status;
-}
-
-void update_led_times_from_user_input(void)
-{
-  if (true == check_if_new_times_are_available())
-  {
-    
-  }
-}
-
-void read_nvm(void)
+static void read_nvm(void)
 {
   if (DEBUG_ACTIVE == debug_state)
   {
@@ -404,57 +384,57 @@ void read_nvm(void)
 
 static void check_new_input_times_from_server(void)
 {
-  if ((false == h1.isEmpty()) && (false == m1.isEmpty()) && (false == h2.isEmpty()) && (false == m2.isEmpty()))
+  if ((false == user_time_string[0].isEmpty()) && (false == user_time_string[1].isEmpty()) && (false == user_time_string[2].isEmpty()) && (false == user_time_string[3].isEmpty()))
   {
     uint8_t hour1, minute1, hour2, minute2;
-    hour1 = h1.toInt();
-    minute1 = m1.toInt();
-    hour2 = h2.toInt();
-    minute2 = m2.toInt();
+    hour1 = user_time_string[0].toInt();
+    minute1 = user_time_string[1].toInt();
+    hour2 = user_time_string[2].toInt();
+    minute2 = user_time_string[3].toInt();
 
     if ((hour1 >= 0) && (hour1 <= 23) && (minute1 >= 0) && (minute1 <= 59) && (hour2 >= 0) && (hour2 <= 23) && (minute2 >= 0) && (minute2 <= 59))
     {
       uint8_t ticks_0, ticks_1;
-      ticks_0 = (hour1 * 4) + (minute1 / 15);
-      ticks_1 = (hour2 * 4) + (minute2 / 15);
+      ticks_0 = (hour1 * 10) + (minute1 / 6);
+      ticks_1 = (hour2 * 10) + (minute2 / 6);
 
       led_times_ticks[0] = ticks_0;
       led_times_ticks[1] = ticks_1;
     }
   }
 
-  if ((false == h3.isEmpty()) && (false == m3.isEmpty()) && (false == h4.isEmpty()) && (false == m4.isEmpty()))
+  if ((false == user_time_string[4].isEmpty()) && (false == user_time_string[5].isEmpty()) && (false == user_time_string[6].isEmpty()) && (false == user_time_string[7].isEmpty()))
   {
     uint8_t hour3, minute3, hour4, minute4;
-    hour3 = h3.toInt();
-    minute3 = m3.toInt();
-    hour4 = h4.toInt();
-    minute4 = m4.toInt();
+    hour3 = user_time_string[4].toInt();
+    minute3 = user_time_string[5].toInt();
+    hour4 = user_time_string[6].toInt();
+    minute4 = user_time_string[7].toInt();
 
     if ((hour3 >= 0) && (hour3 <= 23) && (minute3 >= 0) && (minute3 <= 59) && (hour4 >= 0) && (hour4 <= 23) && (minute4 >= 0) && (minute4 <= 59))
     {
       uint8_t ticks_2, ticks_3;
-      ticks_2 = (hour3 * 4) + (minute3 / 15);
-      ticks_3 = (hour4 * 4) + (minute4 / 15);
+      ticks_2 = (hour3 * 10) + (minute3 / 6);
+      ticks_3 = (hour4 * 10) + (minute4 / 6);
 
       led_times_ticks[2] = ticks_2;
       led_times_ticks[3] = ticks_3;
     }
   }
 
-  if ((false == h5.isEmpty()) && (false == m5.isEmpty()) && (false == h6.isEmpty()) && (false == m6.isEmpty()))
+  if ((false == user_time_string[8].isEmpty()) && (false == user_time_string[9].isEmpty()) && (false == user_time_string[10].isEmpty()) && (false == user_time_string[11].isEmpty()))
   {
     uint8_t hour5, minute5, hour6, minute6;
-    hour5 = h5.toInt();
-    minute5 = m5.toInt();
-    hour6 = h6.toInt();
-    minute6 = m6.toInt();
+    hour5 = user_time_string[8].toInt();
+    minute5 = user_time_string[9].toInt();
+    hour6 = user_time_string[10].toInt();
+    minute6 = user_time_string[11].toInt();
 
     if ((hour5 >= 0) && (hour5 <= 23) && (minute5 >= 0) && (minute5 <= 59) && (hour6 >= 0) && (hour6 <= 23) && (minute6 >= 0) && (minute6 <= 59))
     {
       uint8_t ticks_4, ticks_5;
-      ticks_4 = (hour5 * 4) + (minute5 / 15);
-      ticks_5 = (hour6 * 4) + (minute6 / 15);
+      ticks_4 = (hour5 * 10) + (minute5 / 6);
+      ticks_5 = (hour6 * 10) + (minute6 / 6);
 
       led_times_ticks[4] = ticks_4;
       led_times_ticks[5] = ticks_5;
@@ -490,6 +470,11 @@ void setup()
 void loop()
 {
   time_server_update_time();
+
+  if (millis() >= 60000)
+  {
+    sleep_handler_go_sleep_if_ready(led_times_ticks_old[0], led_times_ticks_old[5]);
+  }
 
   wifi_handler_handle_client();
 

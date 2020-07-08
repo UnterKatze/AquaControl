@@ -8,20 +8,6 @@
 #define NUMBER_OF_MEM_BLOCKS 6
 
 /*
- * - ticks:
- * every 15min there is a tick
- * -> one day has 96 ticks
- * 
- * - Index:
- * 0 -> blue morning on ticks
- * 1 -> blue morning off ticks
- * 2 -> white on ticks
- * 3 -> white off ticks
- * 4 -> blue evening on ticks
- * 5 -> blue evening off ticks
- */
-
-/*
  * - Information about write status
  */
 typedef enum Write_Status_ {

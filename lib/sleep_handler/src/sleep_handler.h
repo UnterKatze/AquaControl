@@ -17,6 +17,6 @@ typedef enum Sleep_Mode_ {
 /**
  * - interface functions of the sleep handler
  */
-extern void sleep_handler_go_sleep_if_ready(void);
+extern void sleep_handler_go_sleep_if_ready(byte blue_morning_on_ticks, byte blue_evening_off_ticks);
 
 #endif /* SLEEP_HANDLER_H */
