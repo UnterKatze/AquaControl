@@ -42,9 +42,9 @@ static uint32_t calc_sleep_time_sec(uint8_t time_now_ticks, byte blue_morning_on
         delta_time_sec = time_wakeup_sec_from_next_day - time_now_sec;
     }
 
-    if (delta_time_sec >= 43200)
+    if (delta_time_sec >= 57600)
     {
-        delta_time_sec = 43200;
+        delta_time_sec = 57600;
     }
 
     return delta_time_sec;

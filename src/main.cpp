@@ -6,7 +6,7 @@
 #include "../lib/sleep_handler/src/sleep_handler.h"
 
 #define DEBUG_MODE
-#define WHITE_LED_PIN D4
+#define WHITE_LED_PIN D1
 #define BLUE_LED_PIN D2
 
 /**
