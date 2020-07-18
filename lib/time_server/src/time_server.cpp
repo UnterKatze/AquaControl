@@ -41,7 +41,8 @@ extern uint8_t time_server_get_hour(void)
 {
   uint8_t c_hour = timeClient.getHours();
   uint32_t epoch_time = timeClient.getEpochTime();
-  if (((epoch_time >= SUMMER_TIME_START_2020) && (epoch_time <= SUMMER_TIME_END_2020)) || ((epoch_time >= SUMMER_TIME_START_2021) && (epoch_time <= SUMMER_TIME_END_2021)))
+  if (((epoch_time >= SUMMER_TIME_START_2020) && (epoch_time <= SUMMER_TIME_END_2020)) || ((epoch_time >= SUMMER_TIME_START_2021) && (epoch_time <= SUMMER_TIME_END_2021)) || 
+  ((epoch_time >= SUMMER_TIME_START_2022) && (epoch_time <= SUMMER_TIME_END_2022)) || ((epoch_time >= SUMMER_TIME_START_2023) && (epoch_time <= SUMMER_TIME_END_2023)))
   {
     c_hour++;
     if (c_hour == 24)

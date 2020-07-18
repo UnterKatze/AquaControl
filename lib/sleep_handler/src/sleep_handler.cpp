@@ -11,7 +11,7 @@ static uint8_t convert_actual_time_to_ticks(uint8_t hour_now, uint8_t minute_now
 static Sleep_Mode check_sleep_mode(uint8_t time_now_ticks, byte blue_morning_on_ticks, byte blue_evening_off_ticks)
 {
     Sleep_Mode status = SLEEP_MODE_OFF;
-    if ((time_now_ticks < (blue_morning_on_ticks - 3)) || (time_now_ticks >= (blue_evening_off_ticks + 3)))
+    if ((time_now_ticks < (blue_morning_on_ticks - 3)) || (time_now_ticks >= (blue_evening_off_ticks + 1)))
     {
         status = SLEEP_MODE_ON;
     }
@@ -42,7 +42,7 @@ static uint32_t calc_sleep_time_sec(uint8_t time_now_ticks, byte blue_morning_on
         delta_time_sec = time_wakeup_sec_from_next_day - time_now_sec;
     }
 
-    if (delta_time_sec >= 57600)
+    if (delta_time_sec >= 57600) // maximum of 16h of sleep
     {
         delta_time_sec = 57600;
     }
@@ -67,10 +67,23 @@ extern void sleep_handler_go_sleep_if_ready(byte blue_morning_on_ticks, byte blu
         sleep_time_sec = calc_sleep_time_sec(time_now_ticks, blue_morning_on_ticks, blue_evening_off_ticks);
         if (DEBUG_ACTIVE == debug_state)
         {
-            debug_print("Going to Sleep for:");
-            debug_print(String(sleep_time_sec));
-            debug_print("Seconds");
+            debug_print("Next Led Control in:");
+            debug_print(String(sleep_time_sec / 60));
+            debug_print("Minutes");
         }
+
+        if (sleep_time_sec > 3600)
+        {
+            sleep_time_sec = 3600;
+        }
+
+        if (DEBUG_ACTIVE == debug_state)
+        {
+            debug_print("Going to sleep for:");
+            debug_print(String(sleep_time_sec / 60));
+            debug_print("Minutes");
+        }
+
         ESP.deepSleep(sleep_time_sec * 1000000);
     }
 }
