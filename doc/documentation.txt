@@ -4,13 +4,13 @@ Requirements:
 #1	2 Loads (19.5V 0.7A) should be controlled by a microcontroller
 #2	The 2 loads should be controlled seperately
 #3	The 2 loads should be controlled by time
-#4	The time should be adjustable by the user
+#4	The times should be adjustable by the user
 #5	The given time by user should be stored persistently
 #6	The current consumption of the Controller should be as low as possible
 
 Software Architecture:
 Software Component 1:	TIME_SERVER			DONE
-Software Component 2:	WIFI_HANDLER
+Software Component 2:	WIFI_HANDLER			DONE
 Software Component 3:	SLEEP_HANDLER			DONE
 Software Component 4:	DEBUG_MODULE			DONE
 Software Component 5: 	NVM_HANDLER			DONE
