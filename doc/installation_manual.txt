@@ -1,0 +1,14 @@
+1 - Connect both male usb headers to a 19.5V power source
+2 - Find out the correct IP-Address of the AquaControlV1 with the help of your router
+3 - Type in the IP-Address of the AquaControlV1 in a web-browser (must be in same home-network)
+4 - Type in the times you want your loads to be turned off or on automatically
+5 - Click save to store the times permanently
+6 - Plugin your loads which should be controlled by the AquaControlV1
+
+The board will go to sleep between the last time in the evening and the first time in the morning.
+In this period you can't set new times. You can restart the AquaControlV1 by reconnecting it to power.
+After a restart you have 1min to type in new times. After 1min the AquaControlV1 will go to sleep again if
+there is nothing to do.
+
+The board consumes about 1W while operating and about 0.5W while sleeping.
+In germany the energy consts of this device should be between 1.50€ and 2.50€ a year.
