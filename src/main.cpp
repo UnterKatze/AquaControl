@@ -5,7 +5,7 @@
 #include "../lib/time_server/src/time_server.h"
 #include "../lib/sleep_handler/src/sleep_handler.h"
 
-#define DEBUG_MODE
+// #define DEBUG_MODE
 #define WHITE_LED_PIN D1
 #define BLUE_LED_PIN D2
 
@@ -58,8 +58,8 @@ static char htmlResponse[3000];
  */
 static String user_time_string[NUMBER_OF_MEM_BLOCKS * 2];
 
-static const char ssid[] = "Kwik-E-Mart";
-static const char password[] = "9589089603281286";
+static const char ssid[] = "Vodafone-F2FB";
+static const char password[] = "Di3d6EPwfwTpuJjT";
 
 static Internet_Conn wifi_handler_init(void);
 static Internet_Conn wifi_handler_get_wifi_status(void);
